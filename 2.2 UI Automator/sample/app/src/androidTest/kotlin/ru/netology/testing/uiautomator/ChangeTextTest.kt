@@ -9,6 +9,7 @@ import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiSelector
 import androidx.test.uiautomator.Until
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -110,6 +111,60 @@ class ChangeTextTest {
         assertEquals(result, textToSet)
     }
 
+    @Test
+    fun testEmptyInput() {
+        val packageName = MODEL_PACKAGE
+        waitForPackage(packageName)
+
+        // Находим элементы
+        val input = device.wait(Until.findObject(By.res(packageName, "userInput")), TIMEOUT)
+        val button = device.wait(Until.findObject(By.res(packageName, "buttonChange")), TIMEOUT)
+        val textView = device.wait(Until.findObject(By.res(packageName, "textToBeChanged")), TIMEOUT)
+
+        assertNotNull(input)
+        assertNotNull(button)
+        assertNotNull(textView)
+
+        // Сохраняем старый текст
+        val oldText = textView.text
+
+        // Вводим пустую строку
+        input.text = "   "
+        button.click()
+
+        // Ждём обновления UI
+        device.waitForIdle()
+
+        val newText = device.findObject(By.res(packageName, "textToBeChanged")).text
+
+        // Проверяем, что текст НЕ изменился
+        assertEquals(oldText, newText)
+    }
+
+    @Test
+    fun testOpenNewActivity() {
+        val packageName = MODEL_PACKAGE
+        waitForPackage(packageName)
+
+        val input = device.wait(Until.findObject(By.res(packageName, "userInput")), TIMEOUT)
+        val button = device.wait(Until.findObject(By.res(packageName, "buttonActivity")), TIMEOUT)
+
+        assertNotNull(input)
+        assertNotNull(button)
+
+        val text = "Hello Test"
+        input.text = text
+
+        button.click()
+
+        // Ждём новую Activity
+        device.wait(Until.hasObject(By.text(text)), TIMEOUT)
+
+        val result = device.findObject(By.text(text))
+
+        assertNotNull(result)
+        assertEquals(text, result.text)
+    }
 }
 
 
